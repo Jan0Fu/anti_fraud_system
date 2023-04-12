@@ -1,5 +1,7 @@
 package antifraud.controller;
 
+import antifraud.model.dto.ActivateRequest;
+import antifraud.model.dto.UpdateRoleRequest;
 import antifraud.model.dto.UserRegisterRequest;
 import antifraud.model.dto.UserRegisterResponse;
 import antifraud.service.UserService;
@@ -32,5 +34,15 @@ public class UserController {
     @DeleteMapping("/user/{username}")
     public ResponseEntity<Object> deleteUser(@PathVariable String username) {
         return userService.deleteUser(username);
+    }
+
+    @PutMapping("/role")
+    public ResponseEntity<Object> updateRole(@RequestBody @Valid UpdateRoleRequest roleRequest) {
+        return userService.updateRole(roleRequest);
+    }
+
+    @PutMapping("/access")
+    public ResponseEntity<Object> activateUser(@RequestBody @Valid ActivateRequest activateReq) {
+        return userService.activateUser(activateReq);
     }
 }

@@ -6,20 +6,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
-@AllArgsConstructor
-@Setter
-@Getter
+@Getter @Setter
 @NoArgsConstructor
-public class UserRegisterResponse {
-
-    @NotBlank
-    private Long id;
-    @NotBlank
-    private String name;
+@AllArgsConstructor
+public class ActivateRequest {
     @NotBlank
     private String username;
-    @NotNull
-    private String role;
+    @NotBlank
+    private String operation;
 }

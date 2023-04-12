@@ -18,7 +18,7 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
-    @PostMapping(value = "/transaction", consumes = "application/json")
+    @PostMapping("/transaction")
     public ResponseEntity<Object> validateTransaction(@RequestBody Transaction transaction) {
         return transactionService.validateTransaction(transaction);
     }

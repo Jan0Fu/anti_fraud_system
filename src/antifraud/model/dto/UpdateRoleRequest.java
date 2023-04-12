@@ -1,25 +1,17 @@
 package antifraud.model.dto;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 
-@AllArgsConstructor
-@Setter
-@Getter
+@Getter @Setter
 @NoArgsConstructor
-public class UserRegisterResponse {
+public class UpdateRoleRequest {
 
-    @NotBlank
-    private Long id;
-    @NotBlank
-    private String name;
     @NotBlank
     private String username;
-    @NotNull
+    @NotBlank
     private String role;
 }

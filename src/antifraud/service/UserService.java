@@ -1,5 +1,7 @@
 package antifraud.service;
 
+import antifraud.model.dto.ActivateRequest;
+import antifraud.model.dto.UpdateRoleRequest;
 import antifraud.model.dto.UserRegisterRequest;
 import antifraud.model.dto.UserRegisterResponse;
 import org.springframework.http.ResponseEntity;
@@ -13,4 +15,8 @@ public interface UserService {
     List<UserRegisterResponse> getAllUsers();
 
     ResponseEntity<Object> deleteUser(String username);
+
+    ResponseEntity<Object> updateRole(UpdateRoleRequest roleRequest);
+
+    ResponseEntity<Object> activateUser(ActivateRequest activateReq);
 }
