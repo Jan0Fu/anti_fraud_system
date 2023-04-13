@@ -1,5 +1,6 @@
 package antifraud.controller;
 
+import antifraud.model.SuspectIp;
 import antifraud.model.dto.ActivateRequest;
 import antifraud.model.dto.UpdateRoleRequest;
 import antifraud.model.dto.UserRegisterRequest;

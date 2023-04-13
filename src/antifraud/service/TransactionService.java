@@ -20,4 +20,24 @@ public class TransactionService {
             return new ResponseEntity<>(Map.of("result", "PROHIBITED"), HttpStatus.OK);
         }
     }
+
+    private String addChecksum(String cardNumber) {
+        cardNumber += "0";
+        int oddSum = 0;
+        int evenSum = 0;
+        for (int i = cardNumber.length() - 1; i >= 0; i--) {
+            int currentNum = Character.getNumericValue(cardNumber.charAt(i));
+            if (i % 2 != 0) {
+                oddSum += currentNum;
+            } else {
+                if (currentNum * 2 > 9) {
+                    evenSum += currentNum * 2 - 9;
+                } else {
+                    evenSum += currentNum * 2;
+                }
+            }
+        }
+        int controlSum = oddSum + evenSum;
+        return String.valueOf(controlSum % 10 == 0 ? 0 : 10 - controlSum % 10);
+    }
 }
