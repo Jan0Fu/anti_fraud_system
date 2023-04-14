@@ -1,15 +1,13 @@
 package antifraud.service;
 
-import antifraud.exception.IpDuplicate;
-import antifraud.exception.IpNotFound;
+import antifraud.exception.IpDuplicateException;
+import antifraud.exception.IpNotFoundException;
 import antifraud.model.SuspectIp;
 import antifraud.model.dto.DeleteIpResponse;
 import antifraud.model.dto.IpResponse;
 import antifraud.repository.IpRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -29,12 +27,12 @@ public class IpServiceImpl implements IpService {
 
     @Override
     @Transactional
-    public IpResponse saveIp(SuspectIp ip) throws IpDuplicate {
+    public IpResponse saveIp(SuspectIp ip) throws IpDuplicateException {
         Optional<SuspectIp> optionalIp = ipRepository.findIpsByIp(ip.getIp());
         if (optionalIp.isEmpty()) {
             ipRepository.save(ip);
         } else {
-            throw new IpDuplicate("IP already persists");
+            throw new IpDuplicateException("IP already persists");
         }
         Long id = ipRepository.findById(ip.getId()).get().getId();
         return new IpResponse(id, ip.getIp());
@@ -42,9 +40,9 @@ public class IpServiceImpl implements IpService {
 
     @Override
     @Transactional
-    public DeleteIpResponse deleteIp(String ip) throws IpNotFound {
+    public DeleteIpResponse deleteIp(String ip) throws IpNotFoundException {
         Optional<SuspectIp> optionalIP = ipRepository.findIpsByIp(ip);
-        if (optionalIP.isEmpty()) throw new IpNotFound("IP not found");
+        if (optionalIP.isEmpty()) throw new IpNotFoundException("IP not found");
         ipRepository.deleteByIp(ip);
         return new DeleteIpResponse(String.format("IP %s successfully removed!", ip));
     }

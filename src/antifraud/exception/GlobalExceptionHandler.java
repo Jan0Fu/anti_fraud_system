@@ -14,18 +14,24 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler
-    ResponseEntity<ErrorDto> errorHandler(IpNotFound exception) {
-        return ResponseEntity.status(406).body(new ErrorDto(exception.getMessage()));
+    ResponseEntity<ErrorDto> errorHandler(IpNotFoundException exception) {
+        return ResponseEntity.status(404).body(new ErrorDto(exception.getMessage()));
     }
 
     @ExceptionHandler
-    ResponseEntity<ErrorDto> errorHandler(IpDuplicate exception) {
+    ResponseEntity<ErrorDto> errorHandler(NegativeNumberException exception) {
+        return ResponseEntity.badRequest()
+                .body(new ErrorDto(exception.getMessage()));
+    }
+
+    @ExceptionHandler
+    ResponseEntity<ErrorDto> errorHandler(IpDuplicateException exception) {
         return ResponseEntity.status(409)
                 .body(new ErrorDto(exception.getMessage()));
     }
 
     @ExceptionHandler
-    ResponseEntity<ErrorDto> errorHandler(IncorrectIp exception) {
+    ResponseEntity<ErrorDto> errorHandler(IncorrectIpInput exception) {
         return ResponseEntity.status(400).body(new ErrorDto(exception.getMessage()));
     }
 }

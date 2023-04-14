@@ -9,6 +9,7 @@ import antifraud.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -23,6 +24,7 @@ public class UserController {
     private UserService userService;
 
     @GetMapping("/list")
+    @PreAuthorize("hasRole('ADMINISTRATOR') or hasRole('SUPPORT')")
     public List<UserRegisterResponse> getUsers() {
         return userService.getAllUsers();
     }
@@ -33,16 +35,19 @@ public class UserController {
     }
 
     @DeleteMapping("/user/{username}")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<Object> deleteUser(@PathVariable String username) {
         return userService.deleteUser(username);
     }
 
     @PutMapping("/role")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<Object> updateRole(@RequestBody @Valid UpdateRoleRequest roleRequest) {
         return userService.updateRole(roleRequest);
     }
 
     @PutMapping("/access")
+    @PreAuthorize("hasRole('ADMINISTRATOR')")
     public ResponseEntity<Object> activateUser(@RequestBody @Valid ActivateRequest activateReq) {
         return userService.activateUser(activateReq);
     }

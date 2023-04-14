@@ -24,7 +24,7 @@ public class SuspectIp {
     private long id;
 
     @Column(name = "ip_adress", nullable = false)
-    @Pattern(regexp = "^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\\\\.(?!$)|$)){4}$", message = "Not valid IP")
+    @Pattern(regexp = "^(([0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])(\\.(?!$)|$)){4}$", message = "Not valid IP")
     @NotBlank
     private String ip;
 }

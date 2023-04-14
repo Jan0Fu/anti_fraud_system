@@ -1,12 +1,16 @@
 package antifraud.controller;
 
+import antifraud.exception.CannotParseException;
+import antifraud.exception.NegativeNumberException;
 import antifraud.model.Transaction;
+import antifraud.model.dto.TransactionFeedback;
+import antifraud.model.dto.TransactionResponse;
 import antifraud.service.TransactionService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
 
 @RestController
 @RequestMapping("/api/antifraud")
@@ -19,7 +23,8 @@ public class TransactionController {
     }
 
     @PostMapping("/transaction")
-    public ResponseEntity<Object> validateTransaction(@RequestBody Transaction transaction) {
+    @PreAuthorize("hasRole('MERCHANT')")
+    public TransactionResponse validateTransaction(@RequestBody @Valid Transaction transaction) throws CannotParseException, NegativeNumberException {
         return transactionService.validateTransaction(transaction);
     }
 }

@@ -1,8 +1,8 @@
 package antifraud.controller;
 
-import antifraud.exception.IncorrectIp;
-import antifraud.exception.IpDuplicate;
-import antifraud.exception.IpNotFound;
+import antifraud.exception.IncorrectIpInput;
+import antifraud.exception.IpDuplicateException;
+import antifraud.exception.IpNotFoundException;
 import antifraud.model.SuspectIp;
 import antifraud.model.dto.DeleteIpResponse;
 import antifraud.model.dto.IpResponse;
@@ -30,13 +30,13 @@ public class IpController {
     }
 
     @PostMapping("/suspicious-ip")
-    public ResponseEntity<IpResponse> addSusIp(@RequestBody @Valid SuspectIp ip) throws IpDuplicate {
+    public ResponseEntity<IpResponse> addSusIp(@RequestBody @Valid SuspectIp ip) throws IpDuplicateException {
         IpResponse ipResponse = ipService.saveIp(ip);
         return ResponseEntity.status(200).body(ipResponse);
     }
 
     @DeleteMapping("/suspicious-ip/{ip}")
-    public ResponseEntity<DeleteIpResponse> deleteIp(@PathVariable String ip) throws IpNotFound, IncorrectIp {
+    public ResponseEntity<DeleteIpResponse> deleteIp(@PathVariable String ip) throws IncorrectIpInput, IpNotFoundException {
         IpValidator.validateIp(ip);
         DeleteIpResponse deleteIp = ipService.deleteIp(ip);
         return ResponseEntity.status(200).body(deleteIp);
