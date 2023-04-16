@@ -38,10 +38,10 @@ public class Transaction {
     @NotNull
     private String number;
     @Enumerated(EnumType.STRING)
-//    @NotNull
+    @NotNull
     private Region region;
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
-//    @NotNull
+    @NotNull
     private LocalDateTime date;
     @Enumerated(EnumType.STRING)
     @JsonIgnore

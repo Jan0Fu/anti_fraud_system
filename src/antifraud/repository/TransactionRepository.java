@@ -12,6 +12,4 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     List<Transaction> findAllByNumber(String number);
     List<Transaction> findAll();
     Optional<Transaction> findFirstByNumber(String number);
-
-    List<Transaction> findByNumber(String number);
 }

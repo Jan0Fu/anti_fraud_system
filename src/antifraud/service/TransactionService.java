@@ -8,14 +8,19 @@ import antifraud.model.Card;
 import antifraud.model.SuspectIp;
 import antifraud.model.Transaction;
 import antifraud.model.UserCard;
+import antifraud.model.dto.TransactionFeedback;
+import antifraud.model.dto.TransactionInfo;
 import antifraud.model.dto.TransactionResponse;
 import antifraud.repository.CardRepository;
 import antifraud.repository.IpRepository;
 import antifraud.repository.TransactionRepository;
 import antifraud.repository.UserCardRepository;
+import antifraud.utils.IpValidator;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import javax.transaction.Transactional;
 import java.util.ArrayList;
@@ -53,7 +58,7 @@ public class TransactionService {
         Optional<SuspectIp> ip = ipRepository.findIpsByIp(transaction.getIp());
         Optional<Card> card = cardRepository.findByNumber(transaction.getNumber());
         List<Transaction> listOfTransactions = transactionRepository
-                .findByNumber(transaction.getNumber());
+                .findByNumberAndDateBetween(transaction.getNumber(), transaction.getDate().minusHours(1), transaction.getDate());
 
         List<String> stringResults = new ArrayList<>();
         long iPRequests = listOfTransactions.stream().map(Transaction::getIp).distinct().count();
@@ -144,5 +149,71 @@ public class TransactionService {
             flag = true;
         }
         return flag;
+    }
+
+    @Transactional
+    public TransactionInfo feedbackInfo(TransactionFeedback feedback) {
+        Optional<Transaction> transactionById = transactionRepository.findById(feedback.getTransactionId());
+
+        checkForValidFeedback(feedback, transactionById);
+        Transaction transaction = transactionById.get();
+        checkingCard = userCardRepository.findLastByNumber(transaction.getNumber()).get();
+        setMaxAllowedValueAndMaxManualValue(feedback, transaction);
+        userCardRepository.save(checkingCard);
+        transaction.setFeedback(feedback.getFeedback());
+        transactionRepository.save(transaction);
+        return mapper.map(transaction, TransactionInfo.class);
+    }
+
+    public List<TransactionInfo> getTransactions(String number) {
+        IpValidator.validateNumber(number);
+        Optional<Transaction> optionalTransaction = transactionRepository.findFirstByNumber(number);
+        if (optionalTransaction.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        }
+        return transactionRepository.findAllByNumber(number)
+                .stream().map(t -> mapper.map(t, TransactionInfo.class)).toList();
+    }
+
+    public List<TransactionInfo> getTransactionsHistory() {
+        return transactionRepository.findAll()
+                .stream().map(transaction -> mapper.map(transaction, TransactionInfo.class)).toList();
+    }
+
+    private static void checkForValidFeedback(TransactionFeedback feedback, Optional<Transaction> transactionById) {
+        if (transactionById.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } else if (!transactionById.get().getFeedback().isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT);
+        } else if (transactionById.get().getResult().equals(feedback.getFeedback())) {
+            throw new ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+    }
+
+    private void setMaxAllowedValueAndMaxManualValue(TransactionFeedback feedback, Transaction transaction) {
+        long maxAllowedValue = checkingCard.getAllowedValue();
+        long maxManualValue = checkingCard.getManualValue();
+        long transactionAmount = Long.parseLong(transaction.getAmount());
+
+        double allowedLimitDecrease = Math.ceil((LIMIT_MODIFIER * maxAllowedValue) - (TRANSACTION_MODIFIER * transactionAmount));
+        double allowedLimitIncrease = Math.ceil((LIMIT_MODIFIER * maxAllowedValue) + (TRANSACTION_MODIFIER * transactionAmount));
+        double manualLimitDecrease = Math.ceil((LIMIT_MODIFIER * maxManualValue) - (TRANSACTION_MODIFIER * transactionAmount));
+        double manualLimitIncrease = Math.ceil((LIMIT_MODIFIER * maxManualValue) + (TRANSACTION_MODIFIER * transactionAmount));
+
+        if (transaction.getResult().equals(TransactionOutput.ALLOWED) && feedback.getFeedback().equals(TransactionOutput.MANUAL_PROCESSING)) {
+            checkingCard.setAllowedValue((int) allowedLimitDecrease);
+        } else if (transaction.getResult().equals(TransactionOutput.ALLOWED) && feedback.getFeedback().equals(TransactionOutput.PROHIBITED)) {
+            checkingCard.setAllowedValue((int) allowedLimitDecrease);
+            checkingCard.setManualValue((int) manualLimitDecrease);
+        } else if (transaction.getResult().equals(TransactionOutput.MANUAL_PROCESSING) && feedback.getFeedback().equals(TransactionOutput.ALLOWED)) {
+            checkingCard.setAllowedValue((int) allowedLimitIncrease);
+        } else if (transaction.getResult().equals(TransactionOutput.MANUAL_PROCESSING) && feedback.getFeedback().equals(TransactionOutput.PROHIBITED)) {
+            checkingCard.setManualValue((int) manualLimitDecrease);
+        } else if (transaction.getResult().equals(TransactionOutput.PROHIBITED) && feedback.getFeedback().equals(TransactionOutput.ALLOWED)) {
+            checkingCard.setAllowedValue((int) allowedLimitIncrease);
+            checkingCard.setManualValue((int) manualLimitIncrease);
+        } else if (transaction.getResult().equals(TransactionOutput.PROHIBITED) && feedback.getFeedback().equals(TransactionOutput.MANUAL_PROCESSING)) {
+            checkingCard.setManualValue((int) manualLimitIncrease);
+        }
     }
 }
